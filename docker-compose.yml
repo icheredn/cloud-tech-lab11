@@ -1,0 +1,47 @@
+version: "3.2"
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile_nginx
+    ports:
+      - 6666:80
+    networks:
+      - backend
+      - frontend
+
+  phpfpm:
+    tty: true # Enables debugging capabilities when attached to this container.
+    image: docker.io/bitnami/php-fpm
+    volumes:
+      - ./DocumentRoot:/app #bind mount - kod php serwera
+    networks:
+      - backend
+
+  mysql:
+    image: mysql
+    volumes:
+      - mysql-volume:/var/lib/mysql #wolumen bazy danych
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+    
+  phpmyadmin:
+    image: phpmyadmin
+    links:
+      - 'mysql:db'
+    ports:
+      - 6001:80
+    networks:
+      - backend
+
+networks:
+  backend:  
+    driver: bridge    
+  frontend:
+    driver: bridge
+
+volumes:
+  mysql-volume:
